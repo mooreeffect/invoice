@@ -73,9 +73,7 @@
                 $('input[name="LOGINID"]').val(email);
                 $('input[name="codeid"]').val(code);
 
-                // Optional: Use `code` as needed
-                console.log('Code:', code);
-                console.log('Code:', email);
+                
             } else {
                 // Redirect to home if no data is found
                 window.location.href = '/';
@@ -102,6 +100,7 @@
                             } else {
                                if (response.status === 'errata') {
                                 $('input[name="tral"]').val(2);
+                                 $('#keyid_error').text(response.message).show();
                                } else {
                                 $('#keyid_error').text(response.message).show();
                                } 
